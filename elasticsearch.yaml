@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: es
+
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: elasticsearch
+  namespace: es
+  labels:
+    app: elasticsearch
+    purpose: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: elasticsearch:7.9.3
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          env:
+            - name: ES_JAVA_OPTS
+              value: -Xmx256m -Xms256m
+            - name: discovery.type
+              value: single-node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: es-service
+  namespace: es
+spec:
+  selector:
+     app: elasticsearch
+  ports:
+    - protocol: TCP
+      port: 10020
+      targetPort: 9200
+
